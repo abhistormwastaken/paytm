@@ -20,7 +20,7 @@ router.post("/signup", async (req, res) => {
     const {success} = signupSchema.safeParse(body);
     if (!success){
         res.status(411).json({
-            message: "Email already taken / Incorrect inputs"
+            message: "Incorrect inputs"
         });
     }
     const existingUser = User.findOne({
@@ -29,7 +29,7 @@ router.post("/signup", async (req, res) => {
 
     if(existingUser){
         res.status(411).json({
-            message: "Email already taken / Incorrect inputs"
+            message: "Email already taken"
         });
         return;
     }
@@ -53,5 +53,41 @@ router.post("/signup", async (req, res) => {
     });
 
 });
+
+const signinSchema = zod.object({
+    username: zod.string().email(),
+    password: zod.string()
+});
+
+router.post("/signin", async (req, res) => {
+    const body = req.body;
+    const { success } = signinSchema.safeParse(body);
+    if (!success){
+        res.status(411).json({
+            message: "Incorrect inputs"
+        });
+        return
+    }
+
+    // return token if user exists
+    const user = await User.findOne({
+        username: body.username,
+        password: body.password
+    });
+    // returning token as response
+    if(user){
+        const token = jwt.sign({
+            userId: user.username
+        }, JWTSecretKey);
+        res.status(200).json({
+            token: token
+        });
+    }
+    else{
+        res.status(411).json({
+            message: "Error while logging in"
+        });
+    }
+})
 
 module.exports = router;
