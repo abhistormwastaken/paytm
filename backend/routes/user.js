@@ -7,7 +7,7 @@ const jwt = require("jsonwebtoken");
 const JWTSecretKey = require("../config");
 const User = require("../db");
 
-const signupSchema = zod.object({
+const signupBody = zod.object({
     username: zod.string().email(),
     firstName: zod.string(),
     lastName: zod.string(),
@@ -17,7 +17,7 @@ const signupSchema = zod.object({
 router.post("/signup", async (req, res) => {
     const body = req.body;
     // zod validation
-    const {success} = signupSchema.safeParse(body);
+    const {success} = signupBody.safeParse(body);
     if (!success){
         res.status(411).json({
             message: "Incorrect inputs"
@@ -54,14 +54,14 @@ router.post("/signup", async (req, res) => {
 
 });
 
-const signinSchema = zod.object({
+const signinBody = zod.object({
     username: zod.string().email(),
     password: zod.string()
 });
 
 router.post("/signin", async (req, res) => {
     const body = req.body;
-    const { success } = signinSchema.safeParse(body);
+    const { success } = signinBody.safeParse(body);
     if (!success){
         res.status(411).json({
             message: "Incorrect inputs"
@@ -88,6 +88,48 @@ router.post("/signin", async (req, res) => {
             message: "Error while logging in"
         });
     }
+})
+
+const { authMiddleware } = require("../middleware");
+
+const updateSchema = zod.object({
+    firstName: zod.string().optional(),
+    lastName: zod.string().optional(),
+    password: zod.string().optional()
+});
+
+router.put("/", authMiddleware, async (req, res) => {
+    const { success } = updateSchema.safeParse(req.body);
+    if(!success){
+        return res.status(411).json({
+            message: "Error while updating information"
+        });
+    }
+    // find and update user information with req.body
+    await User.updateOne({ _id: req.userId }, req.body);
+    res.json({
+        message: "Updated successfully"
+    });
+})
+
+router.get("/bulk", async (req, res) => {
+    const filter = req.query.filter || "";
+    const users = await User.find({
+        // $or is for filtering by multiple conditions
+        $or: [{ 
+            // filter by first name or last name
+            // options: i is for case insensitive
+            firstName: { $regex: filter, $options: "i" },
+            lastName: { $regex: filter, $options: "i" } 
+        }]
+    })
+    res.json({
+        user: users.map(user => ({
+                firstName: user.firstName,
+                lastName: user.lastName,
+                username: user.username
+            }))
+    })
 })
 
 module.exports = router;
