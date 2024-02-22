@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 mongoose.connect("mongodb+srv://abhiwastaken:abhiwastaken@cluster0.zgdntvd.mongodb.net/paytm")
 
-//schema for paytm db
+// schema for paytm db
 const userSchema = new mongoose.Schema({
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
@@ -12,4 +12,15 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema);
 
-module.exports = User;
+// schema for paytm account
+const accountSchema = new Mongoose.Schema({
+    username: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    balance: { type: Number, required: true }
+})
+
+const Account = mongoose.model("Account", accountSchema)
+
+module.exports = {
+    User,
+    Account
+};

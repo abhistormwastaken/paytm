@@ -5,7 +5,7 @@ const router = express.Router();
 const zod = require("zod");
 const jwt = require("jsonwebtoken");
 const JWTSecretKey = require("../config");
-const User = require("../db");
+const { User, Account } = require("../db");
 
 const signupBody = zod.object({
     username: zod.string().email(),
@@ -41,6 +41,12 @@ router.post("/signup", async (req, res) => {
         lastName: body.lastName,
         password: body.password
     });
+
+    // create account and give random balance to user
+    const account = await Account.create({
+        username: userId,
+        balance: 1 + Math.random() * 10000
+    })
 
     const userId = newUser.username
     const token = jwt.sign({
