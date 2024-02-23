@@ -19,36 +19,36 @@ router.post("/signup", async (req, res) => {
     // zod validation
     const {success} = signupBody.safeParse(body);
     if (!success){
-        res.status(411).json({
+        return res.status(411).json({
             message: "Incorrect inputs"
         });
     }
-    const existingUser = User.findOne({
+    const existingUser = await User.findOne({
         username: body.username
     })
 
     if(existingUser){
-        res.status(411).json({
+        return res.status(411).json({
             message: "Email already taken"
         });
-        return;
     }
 
     // make new user if not already existing
-    const newUser = await User.create({
+    const user = await User.create({
         username: body.username,
         firstName: body.firstName,
         lastName: body.lastName,
         password: body.password
-    });
-
-    // create account and give random balance to user
-    const account = await Account.create({
-        username: userId,
-        balance: 1 + Math.random() * 10000
     })
 
-    const userId = newUser.username
+    const userId = user._id;
+
+    // create account and give random balance to user
+    await Account.create({
+        userId,
+        balance: 1 + Math.random() * 10000
+    })
+    
     const token = jwt.sign({
         userId
     }, JWTSecretKey)
@@ -83,7 +83,7 @@ router.post("/signin", async (req, res) => {
     // returning token as response
     if(user){
         const token = jwt.sign({
-            userId: user.username
+            userId: user._id
         }, JWTSecretKey);
         res.status(200).json({
             token: token

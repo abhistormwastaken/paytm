@@ -1,2 +1,2 @@
 const JSONSecretKey = "abhisecret"
-module.export() = JSONSecretKey
+module.exports = JSONSecretKey
