@@ -14,7 +14,8 @@ const User = mongoose.model("User", userSchema);
 
 // schema for paytm account
 const accountSchema = new Mongoose.Schema({
-    username: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    // to prevent making balances for non-existing users, we use mongoose.Schema.Types.ObjectId with ref to our User table
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     balance: { type: Number, required: true }
 })
 
