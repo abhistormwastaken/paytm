@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
+const db_connection_string = import.meta.env.MONGODB_CONNECTION_STRING;
 
-mongoose.connect("mongodb+srv://abhiwastaken:abhiwastaken@cluster0.zgdntvd.mongodb.net/paytm")
+mongoose.connect(db_connection_string)
 
 // schema for paytm db
 const userSchema = new mongoose.Schema({
